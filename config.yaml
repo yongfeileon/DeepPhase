@@ -1,0 +1,32 @@
+# DeepGoal Phase Runner 配置文件
+
+# Prompt 模板配置（引用独立文件）
+prompts:
+  # 意图识别
+  intent_detector: "prompts/intent_detector.md"
+
+  # 编程任务 prompt
+  coding:
+    analyzer: "prompts/analyzer.md"
+    subagent_task: "prompts/subagent_task.md"
+
+  # 通用任务 prompt
+  general:
+    analyzer: "prompts/general_analyzer.md"
+    subagent_task: "prompts/general_subagent_task.md"
+
+# 安全配置
+security:
+  deny_git: false  # 是否禁止 git 操作
+
+# 工具配置
+tools:
+  # Playwright 浏览器自动化工具
+  playwright:
+    enabled: true  # 是否启用
+    output_dir: "./workspace/screenshots"  # 截图输出目录
+
+  # 智谱 AI 网络搜索和网页阅读工具
+  zhipu_web:
+    enabled: true  # 是否启用
+    replace_builtin: true  # 是否替代内置的 WebSearch/WebFetch
