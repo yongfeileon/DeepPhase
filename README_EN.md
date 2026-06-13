@@ -42,48 +42,130 @@ ANTHROPIC_MODEL=claude-sonnet-4-6
 
 ## 🚀 Quick Start
 
-### Basic Usage
-
-```python
-import asyncio
-from claude_agent_sdk import ClaudeAgentOptions
-from deep_phase import PhaseRunner
-
-async def main():
-    # Configure options
-    options = ClaudeAgentOptions(
-        model="claude-sonnet-4-6",
-        permission_mode="acceptEdits",
-    )
-    
-    # Create PhaseRunner
-    runner = PhaseRunner(
-        options=options,
-        progress_path="path/to/progress.md",
-        design_doc_path="path/to/tech.md"
-    )
-    
-    # Execute next phase
-    result = await runner.run_next_phase()
-    
-    print(f"Phase: {result.phase_name}")
-    print(f"Status: {result.status}")
-    print(f"Completed tasks: {result.completed_tasks}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
 ### Run Example
 
+#### Basic Usage
+
 ```bash
-python main.py <workspace_path>
+python main.py path/to/goal.md
 ```
 
-The example will automatically:
-1. Read the `goal.md` file in the workspace
-2. Analyze requirements and generate design and progress documents
-3. Execute phases one by one until the project is complete
+#### Specify Target Code Directory
+
+```bash
+python main.py path/to/goal.md /path/to/code
+```
+
+#### Disable Git Operations (Safe Mode)
+
+```bash
+python main.py path/to/goal.md /path/to/code --deny-git
+```
+
+### Goal File and Code Directory Separation
+
+DeepPhase supports separating **requirement documents** from **code directory**:
+
+- **Goal File**: Markdown file describing requirements
+- **Code Directory**: Where SubAgent actually performs code operations
+- **Docs Directory**: Auto-generated under `_docs/` in goal file's parent directory
+
+**Parameter Description**:
+
+```bash
+python main.py <goal_file> [target_dir] [--deny-git]
+```
+
+- `goal_file`: Path to goal.md file (required)
+- `target_dir`: Code execution directory (optional, defaults to goal file's parent directory)
+- `--deny-git`: Disable git operations
+
+**Examples**:
+
+```bash
+# Requirements and code in same directory
+python main.py ./workspace/goal.md
+
+# Requirements and code separated
+python main.py ./requirements/goal.md ./my-project
+
+# Disable git operations
+python main.py ./workspace/goal.md --deny-git
+```
+
+The program will automatically:
+1. Read the specified goal file
+2. **Use LLM to identify task type** (coding task or general task)
+3. Analyze requirements and generate documents to `_docs/design/` under goal file's directory
+   - **Coding tasks**: Generate tech.md and progress.md
+   - **General tasks**: Generate progress.md only
+4. Execute phases until completion (code operations in target directory)
+
+### Real-time Interaction
+
+DeepPhase supports real-time interaction during SubAgent execution:
+
+#### Built-in Commands
+
+- `/pause` - Pause execution
+- `/resume` - Resume execution
+- `/stop` - Stop execution
+
+#### Natural Language Input
+
+Input natural language directly during SubAgent execution, and the system will inject it into the current conversation:
+
+```bash
+$ python main.py workspace
+
+[SubAgent] Implementing feature X...
+
+> Please add error handling
+[Status] Received, will inject after next message
+
+[User Input] Please add error handling
+[SubAgent] Sure, I'll add try-catch...
+```
+
+**How it works**:
+
+- Uses **double-loop architecture**: outer loop manages phases, inner loop handles SubAgent messages
+- User input is passed through a queue mechanism
+- SubAgent checks the queue after processing current message and injects user input immediately
+- No need to wait for current phase to end, can intervene in real-time
+
+### Channel System
+
+DeepPhase uses an extensible Channel system for I/O:
+
+#### Built-in Channel
+
+- **CLIChannel**: Command-line interaction (enabled by default)
+
+#### Extending Channels
+
+Implement custom Channels to integrate other communication methods (WebSocket, HTTP API, etc.):
+
+```python
+from deep_phase.channels import Channel, Message, MessageType
+
+class CustomChannel(Channel):
+    async def send(self, message: Message):
+        # Send message to external system
+        pass
+    
+    async def receive(self) -> str:
+        # Receive external input
+        pass
+
+# Register Channel
+channel_mgr.register_channel(CustomChannel())
+```
+
+Channel features:
+- Broadcast messages to all active channels
+- Command handling (`/pause`, `/stop`, etc.)
+- Natural language input routing
 
 ## 📁 Project Structure
 

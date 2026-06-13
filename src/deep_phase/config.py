@@ -131,3 +131,16 @@ class Config:
             if keyword in content_lower:
                 return 'coding'
         return 'general'
+
+    def get_runner_config(self) -> Dict[str, Any]:
+        """获取执行器配置
+
+        Returns:
+            执行器配置字典（包含默认值）
+        """
+        runner = self.data.get('runner', {})
+        return {
+            'max_retries': runner.get('max_retries', 3),
+            'retry_delay': runner.get('retry_delay', 2),
+            'token_timeout': runner.get('token_timeout', 120)
+        }

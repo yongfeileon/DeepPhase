@@ -5,6 +5,10 @@ prompts:
   # 意图识别
   intent_detector: "prompts/intent_detector.md"
 
+  # 执行控制
+  pre_execution_checker: "prompts/pre_execution_checker.md"
+  completion_checker: "prompts/completion_checker.md"
+
   # 编程任务 prompt
   coding:
     analyzer: "prompts/analyzer.md"
@@ -18,6 +22,12 @@ prompts:
 # 安全配置
 security:
   deny_git: false  # 是否禁止 git 操作
+
+# 执行器配置
+runner:
+  max_retries: 3  # 超时后最大重试次数
+  retry_delay: 2  # 重试间隔（秒）
+  token_timeout: 120  # LLM响应超时时间（秒）
 
 # 工具配置
 tools:

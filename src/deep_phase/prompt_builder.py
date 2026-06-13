@@ -37,6 +37,18 @@ class PromptBuilder:
         template = self._load_prompt_file(prompts.get('intent_detector', ''))
         return template.format(goal_content=goal_content)
 
+    def get_pre_execution_check_prompt(self, progress_content: str, recent_history: str) -> str:
+        """获取执行前状态检查 prompt"""
+        prompts = self.config.data.get('prompts', {})
+        template = self._load_prompt_file(prompts.get('pre_execution_checker', ''))
+        return template.format(progress_content=progress_content, recent_history=recent_history)
+
+    def get_completion_check_prompt(self, subagent_output: str, progress_content: str) -> str:
+        """获取完成判断 prompt"""
+        prompts = self.config.data.get('prompts', {})
+        template = self._load_prompt_file(prompts.get('completion_checker', ''))
+        return template.format(subagent_output=subagent_output, progress_content=progress_content)
+
     def _load_prompt_file(self, prompt_value: str) -> str:
         """加载 prompt 文件内容"""
         if not prompt_value:
